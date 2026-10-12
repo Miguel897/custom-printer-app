@@ -11,6 +11,12 @@ such as the HP ENVY 6400 series. No HP software or scanner driver needed.
 
 See [docs/PRD.md](docs/PRD.md) for requirements and design.
 
+## Download
+
+Get `ScanDesk.exe` from the [latest release](https://github.com/Miguel897/custom-printer-app/releases/latest).
+It is a single self-contained file: no installation and no .NET needed. Windows SmartScreen may warn
+because the exe is not code-signed: click **More info → Run anyway**.
+
 ## Requirements
 
 - Windows 10/11 x64
@@ -33,6 +39,14 @@ dotnet publish src/ScanDesk.App -c Release -r win-x64 -o publish
 
 Produces `publish/ScanDesk.exe` (~64 MB, self-contained). Copy it to any Windows PC on the same network as the scanner.
 
+To publish a release on GitHub, push a version tag; the [Release workflow](.github/workflows/release.yml)
+tests, builds and attaches `ScanDesk.exe`:
+
+```powershell
+git tag v1.0.1
+git push origin v1.0.1
+```
+
 ## First run on a new PC
 
 - Windows Firewall asks whether ScanDesk may use the network: allow it on **private** networks so the
@@ -54,3 +68,7 @@ src/ScanDesk.Core          eSCL client, scan planning, discovery, document sessi
 src/ScanDesk.App           WPF UI (MVVM, WebView2 preview)
 tests/ScanDesk.Core.Tests  xUnit tests (fixtures captured from an HP ENVY 6400)
 ```
+
+## License
+
+[MIT](LICENSE)

@@ -4,7 +4,7 @@
 |---|---|
 | **Status** | v1 implemented (see §12) |
 | **Date** | 2026-10-12 |
-| **Owner** | Miguel Angel |
+| **Owner** | miguel |
 | **Platform** | Windows 10/11 (x64), .NET 10 LTS, WPF |
 
 ## 1. Summary
