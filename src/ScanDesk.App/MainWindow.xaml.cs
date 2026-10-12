@@ -1,0 +1,121 @@
+using System.ComponentModel;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using Microsoft.Web.WebView2.Core;
+using ScanDesk.App.Services;
+using ScanDesk.App.ViewModels;
+using ScanDesk.Core.Documents;
+using ScanDesk.Core.Settings;
+
+namespace ScanDesk.App;
+
+public partial class MainWindow : Window
+{
+    private readonly MainViewModel _vm;
+    private bool _previewReady;
+    private Point _dragStart;
+    private PageViewModel? _dragPage;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        _vm = new MainViewModel(new DialogService(this), new SettingsStore(), new WorkingSession(WorkingSession.DefaultFolder));
+        DataContext = _vm;
+        _vm.PropertyChanged += OnViewModelPropertyChanged;
+        Loaded += OnLoaded;
+        Closing += OnClosing;
+        Closed += (_, _) => _vm.Dispose();
+    }
+
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        await InitPreviewAsync();
+        await _vm.InitializeAsync();
+    }
+
+    private void OnClosing(object? sender, CancelEventArgs e) => e.Cancel = !_vm.ConfirmClose();
+
+    // ---------------------------------------------------------------- PDF preview (WebView2 = Edge PDF viewer)
+
+    private async Task InitPreviewAsync()
+    {
+        try
+        {
+            // Keep WebView2's profile out of the exe folder (it may be read-only, e.g. Program Files).
+            var dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ScanDesk", "WebView2");
+            var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: dataFolder);
+            await Preview.EnsureCoreWebView2Async(environment);
+            Preview.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            Preview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+            Preview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+            _previewReady = true;
+            Navigate(_vm.PreviewUri);
+        }
+        catch (WebView2RuntimeNotFoundException)
+        {
+            PreviewPlaceholder.Text = "PDF preview is not available: the Microsoft Edge WebView2 Runtime is not installed.\n" +
+                                      "Scanning and saving still work.";
+            Preview.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.PreviewUri))
+            Navigate(_vm.PreviewUri);
+    }
+
+    private void Navigate(Uri? uri)
+    {
+        if (_previewReady)
+            Preview.CoreWebView2.Navigate(uri?.AbsoluteUri ?? "about:blank");
+    }
+
+    // ---------------------------------------------------------------- drag & drop reordering
+
+    private void PageList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _dragStart = e.GetPosition(null);
+        _dragPage = ItemUnder(e.OriginalSource)?.DataContext as PageViewModel;
+    }
+
+    private void PageList_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed || _dragPage is null || _vm.IsScanning)
+            return;
+
+        var delta = _dragStart - e.GetPosition(null);
+        if (Math.Abs(delta.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(delta.Y) < SystemParameters.MinimumVerticalDragDistance)
+            return;
+
+        var page = _dragPage;
+        _dragPage = null;
+        DragDrop.DoDragDrop(PageList, page, DragDropEffects.Move);
+    }
+
+    private void PageList_Drop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(typeof(PageViewModel)) is not PageViewModel page)
+            return;
+
+        var target = ItemUnder(e.OriginalSource)?.DataContext as PageViewModel;
+        var index = target is null ? _vm.Pages.Count - 1 : _vm.Pages.IndexOf(target);
+        _vm.MovePage(page, index);
+    }
+
+    private static ListBoxItem? ItemUnder(object source)
+    {
+        for (var node = source as DependencyObject; node is not null; node = VisualTreeHelper.GetParent(node))
+        {
+            if (node is ListBoxItem item)
+                return item;
+            if (node is not Visual)
+                return null;
+        }
+        return null;
+    }
+}
