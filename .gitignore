@@ -486,3 +486,8 @@ test-scans/
 
 # Published single-file exe
 publish/
+
+# Drafting
+
+draft/
+
