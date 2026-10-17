@@ -774,6 +774,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             Process.Start("explorer.exe", $"\"{dir}\"");
     }
 
+    [RelayCommand]
+    private void ShowAbout() => _dialogs.ShowAbout();
+
     // ---------------------------------------------------------------- shutdown
 
     /// <summary>Returns false to keep the window open. Unsaved pages stay in the session and are offered next start.</summary>

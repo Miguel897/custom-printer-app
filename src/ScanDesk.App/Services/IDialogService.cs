@@ -10,4 +10,6 @@ public interface IDialogService
 
     /// <summary>Returns the chosen path, or null if the user cancelled.</summary>
     string? AskSavePath(string folder, string fileName, string filter);
+
+    void ShowAbout();
 }

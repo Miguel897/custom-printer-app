@@ -1,0 +1,16 @@
+# Categories for GitHub's "Generate release notes" button (fallback only: the Release workflow
+# publishes the CHANGELOG.md section). Dependency bumps are left out; user-visible ones go in
+# CHANGELOG.md under "Security" or "Changed".
+changelog:
+  exclude:
+    labels: [dependencies, github_actions]
+    authors: ["dependabot[bot]", dependabot]
+  categories:
+    - title: Security
+      labels: [security]
+    - title: New features
+      labels: [enhancement]
+    - title: Bug fixes
+      labels: [bug]
+    - title: Other changes
+      labels: ["*"]

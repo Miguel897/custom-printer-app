@@ -39,19 +39,41 @@ dotnet publish src/ScanDesk.App -c Release -r win-x64 -o publish
 
 Produces `publish/ScanDesk.exe` (~64 MB, self-contained). Copy it to any Windows PC on the same network as the scanner.
 
-To publish a release on GitHub, push a version tag; the [Release workflow](.github/workflows/release.yml)
-tests, builds and attaches `ScanDesk.exe`:
+## Versions and releases
 
-```powershell
-git tag v1.0.1
-git push origin v1.0.1
-```
+The version comes from the latest `vX.Y.Z` git tag ([MinVer](https://github.com/adamralph/minver));
+there is no version number in the project files. Builds between tags are pre-releases such as
+`1.0.1-alpha.0.3`.
+
+Every user-visible change adds a line under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md), in the
+same PR. To release:
+
+1. In a PR, rename `## [Unreleased]` to `## [1.1.0] - YYYY-MM-DD` and add a new empty `## [Unreleased]`
+   above it. Merge it.
+2. Tag the merge commit on `main` and push the tag:
+
+   ```powershell
+   git switch main; git pull
+   git tag -a v1.1.0 -m "ScanDesk 1.1.0"
+   git push origin v1.1.0
+   ```
+
+The [Release workflow](.github/workflows/release.yml) tests, builds and attaches `ScanDesk.exe`, using
+that version's CHANGELOG section as the release notes. It fails if the section is missing or the exe
+version does not match the tag.
 
 ## First run on a new PC
 
 - Windows Firewall asks whether ScanDesk may use the network: allow it on **private** networks so the
   scanner can be found automatically (mDNS). Without it, type the scanner's IP address and click **Connect**.
 - Scans are saved to `Documents\Scans` by default; the last used folder is remembered.
+
+## Privacy
+
+ScanDesk has no telemetry and needs no account. It only talks to scanners on your local network
+(mDNS discovery and eSCL over HTTP) and makes no internet connections of its own. Your scans never
+leave your PC. The PDF preview uses the Microsoft Edge WebView2 Runtime that comes with Windows, which
+Windows keeps up to date. The only files ScanDesk writes besides your scans are listed below.
 
 ## Where data is stored
 
@@ -60,6 +82,7 @@ git push origin v1.0.1
 | Settings | `%APPDATA%\ScanDesk\settings.json` |
 | Pages of the current document | `%LOCALAPPDATA%\ScanDesk\Session` |
 | PDF preview browser profile | `%LOCALAPPDATA%\ScanDesk\WebView2` |
+| Log (7 days) | `%LOCALAPPDATA%\ScanDesk\logs` |
 
 ## Project layout
 
@@ -72,3 +95,7 @@ tests/ScanDesk.Core.Tests  xUnit tests (fixtures captured from an HP ENVY 6400)
 ## License
 
 [MIT](LICENSE)
+
+ScanDesk.exe bundles PDFsharp, Zeroconf, System.Reactive, CommunityToolkit.Mvvm, the WebView2 SDK and the
+.NET runtime. Their licenses are in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt), also shown in
+the app under **ⓘ › Third-party notices**.
