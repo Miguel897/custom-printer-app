@@ -5,19 +5,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AssemblyName>ScanDesk</AssemblyName>
-    <Product>ScanDesk</Product>
-    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <!-- dotnet publish src/ScanDesk.App -c Release -r win-x64  =>  one self-contained ScanDesk.exe -->
@@ -30,6 +26,8 @@
     <!-- Only the exe: no .pdb/.xml from referenced projects and packages. -->
     <AllowedReferenceRelatedFileExtensions>.none</AllowedReferenceRelatedFileExtensions>
     <PublishReferencesDocumentationFiles>false</PublishReferencesDocumentationFiles>
+    <!-- The single-file analyzer pulls in an implicit ILLink package that would break the locked restore. -->
+    <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
 </Project>

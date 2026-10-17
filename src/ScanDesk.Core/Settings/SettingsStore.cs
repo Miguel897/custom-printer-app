@@ -26,13 +26,17 @@ public sealed class SettingsStore(string? path = null)
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
         {
+            Log.Error("Settings could not be read; using defaults", ex);
             return new AppSettings();
         }
     }
 
+    /// <summary>Writes atomically (temp file, then move) so a crash never leaves a half-written file.</summary>
     public void Save(AppSettings settings)
     {
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path)!);
-        File.WriteAllText(Path, JsonSerializer.Serialize(settings, JsonOptions));
+        var temp = Path + ".tmp";
+        File.WriteAllText(temp, JsonSerializer.Serialize(settings, JsonOptions));
+        File.Move(temp, Path, overwrite: true);
     }
 }

@@ -8,6 +8,7 @@ using System.Xml;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ScanDesk.App.Services;
+using ScanDesk.Core;
 using ScanDesk.Core.Discovery;
 using ScanDesk.Core.Documents;
 using ScanDesk.Core.Escl;
@@ -357,7 +358,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         SaveSettings();
     }
 
-    private void SaveSettings()
+    /// <summary>Loaded settings; the window reads and updates its placement here.</summary>
+    public AppSettings Settings => _settings;
+
+    public void SaveSettings()
     {
         try
         {
@@ -366,6 +370,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Not worth interrupting the user; defaults are used next time.
+            Log.Error("Settings could not be saved", ex);
         }
     }
 

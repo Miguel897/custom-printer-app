@@ -25,6 +25,7 @@ public partial class MainWindow : Window
         _vm = new MainViewModel(new DialogService(this), new SettingsStore(), new WorkingSession(WorkingSession.DefaultFolder));
         DataContext = _vm;
         _vm.PropertyChanged += OnViewModelPropertyChanged;
+        RestorePlacement();
         Loaded += OnLoaded;
         Closing += OnClosing;
         Closed += (_, _) => _vm.Dispose();
@@ -36,7 +37,44 @@ public partial class MainWindow : Window
         await _vm.InitializeAsync();
     }
 
-    private void OnClosing(object? sender, CancelEventArgs e) => e.Cancel = !_vm.ConfirmClose();
+    private void OnClosing(object? sender, CancelEventArgs e)
+    {
+        e.Cancel = !_vm.ConfirmClose();
+        if (!e.Cancel)
+            SavePlacement();
+    }
+
+    // ---------------------------------------------------------------- window placement
+
+    /// <summary>Restores the saved size and position, clamped to the work area (e.g. above the taskbar at 125 %).</summary>
+    private void RestorePlacement()
+    {
+        var s = _vm.Settings;
+        var work = SystemParameters.WorkArea;
+        Width = Math.Min(s.WindowWidth, work.Width);
+        Height = Math.Min(s.WindowHeight, work.Height);
+        if (s.WindowLeft is { } left && s.WindowTop is { } top
+            && left >= SystemParameters.VirtualScreenLeft - 50 && top >= SystemParameters.VirtualScreenTop - 50
+            && left < SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 100
+            && top < SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 100)
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = Math.Min(left, Math.Max(work.Left, work.Right - Width));
+            Top = Math.Min(top, Math.Max(work.Top, work.Bottom - Height));
+        }
+
+        if (s.WindowMaximized)
+            WindowState = WindowState.Maximized;
+    }
+
+    private void SavePlacement()
+    {
+        var s = _vm.Settings;
+        var bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+        (s.WindowLeft, s.WindowTop, s.WindowWidth, s.WindowHeight) = (bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+        s.WindowMaximized = WindowState == WindowState.Maximized;
+        _vm.SaveSettings();
+    }
 
     // ---------------------------------------------------------------- PDF preview (WebView2 = Edge PDF viewer)
 

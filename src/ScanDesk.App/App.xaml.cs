@@ -1,4 +1,5 @@
 using System.Windows;
+using ScanDesk.Core;
 
 namespace ScanDesk.App;
 
@@ -19,10 +20,20 @@ public partial class App : Application
             return;
         }
 
+        Log.Cleanup();
+        Log.Info($"Start {Environment.ProcessPath}");
+
         DispatcherUnhandledException += (_, args) =>
         {
-            MessageBox.Show($"Unexpected error:\n\n{args.Exception.Message}", "ScanDesk", MessageBoxButton.OK, MessageBoxImage.Error);
+            Log.Error("Unhandled UI exception", args.Exception);
+            MessageBox.Show($"Unexpected error:\n\n{args.Exception.Message}\n\nDetails are in the log ({Log.Folder}).",
+                "ScanDesk", MessageBoxButton.OK, MessageBoxImage.Error);
             args.Handled = true;
+        };
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            Log.Error("Unobserved task exception", args.Exception);
+            args.SetObserved();
         };
 
         MainWindow = new MainWindow();
