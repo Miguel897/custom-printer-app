@@ -6,6 +6,8 @@ All notable changes to ScanDesk are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-17
+
 ### Added
 
 - App icon for the exe, title bar and taskbar.
