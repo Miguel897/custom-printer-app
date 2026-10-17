@@ -136,6 +136,8 @@
                     </Ellipse>
                     <TextBlock Text="{Binding StatusText}" MaxWidth="420" TextTrimming="CharacterEllipsis"
                                ToolTip="{Binding StatusText}" />
+                    <Button Style="{StaticResource IconButton}" Margin="12,0,0,0" Content="&#xE946;"
+                            ToolTip="About ScanDesk" AutomationProperties.Name="About ScanDesk" Command="{Binding ShowAboutCommand}" />
                 </StackPanel>
             </Grid>
         </Border>

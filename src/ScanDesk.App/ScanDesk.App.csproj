@@ -14,7 +14,15 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <AssemblyName>ScanDesk</AssemblyName>
+    <ApplicationIcon>Assets\ScanDesk.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Icon for the About dialog; window title bars use the exe icon (ApplicationIcon). -->
+    <Resource Include="Assets\ScanDesk.ico" />
+    <!-- Required by the bundled components' licenses; shown in About › Third-party notices. -->
+    <EmbeddedResource Include="..\..\THIRD-PARTY-NOTICES.txt" LogicalName="THIRD-PARTY-NOTICES.txt" />
+  </ItemGroup>
 
   <!-- dotnet publish src/ScanDesk.App -c Release -r win-x64  =>  one self-contained ScanDesk.exe -->
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">

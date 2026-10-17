@@ -28,4 +28,6 @@ public sealed class DialogService(Window owner) : IDialogService
         };
         return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
     }
+
+    public void ShowAbout() => new AboutWindow { Owner = owner }.ShowDialog();
 }
