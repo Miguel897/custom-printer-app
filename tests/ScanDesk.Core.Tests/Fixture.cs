@@ -1,7 +1,14 @@
+using System.Runtime.CompilerServices;
+
 namespace ScanDesk.Core.Tests;
 
 internal static class Fixture
 {
+    /// <summary>Keeps test runs out of the real <c>%LOCALAPPDATA%\ScanDesk\logs</c>.</summary>
+    [ModuleInitializer]
+    internal static void RedirectLog() =>
+        Log.Folder = Path.Combine(Path.GetTempPath(), "ScanDeskTests", "logs");
+
     public static string PathOf(string name) => Path.Combine(AppContext.BaseDirectory, "Fixtures", name);
 
     public static string Text(string name) => File.ReadAllText(PathOf(name));
